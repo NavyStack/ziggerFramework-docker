@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  zigger-db:
+    image: mysql:8.0
+    restart: unless-stopped
+
+    logging:
+      options:
+        max-size: "10m"
+    command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_USER: zigger ## 수정
+      MYSQL_PASSWORD: powerpassword ## 수정
+      MYSQL_DATABASE: zigger ## 수정
+      MYSQL_ROOT_PASSWORD: powerpassword ## 수정
+
+    volumes:
+      - zigger-db:/var/lib/mysql
+
+    networks:
+      - traefik-network
+
+  zigger:
+    image: openresty/openresty:1.21.4.1-0-bullseye-fat
+    restart: unless-stopped
+    depends_on:
+      - zigger-db
+
+    logging:
+      options:
+        max-size: "10m"
+    volumes:
+      - zigger-data:/var/www/html
+
+    networks:
+      - traefik-network
+    ports:
+      - 80:80
+
+volumes:
+  zigger-data:
+  zigger-db:
+
+networks:
+  traefik-network:
