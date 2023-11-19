@@ -1,11 +1,6 @@
 ARG NGINX_VERSION=1.25.3
 ARG PHP_VERSION=8.2-fpm-bookworm
 
-FROM navystack/ngx_mod:lua as nginx-moduler
-RUN apt-get update && apt-get install git -y
-RUN git clone --depth=1 https://github.com/e404/htaccess-for-nginx.git /usr/src/nginx-moduler
-
-
 FROM navystack/ngx_mod:${NGINX_VERSION} as zigger-downloader
 
 RUN apt-get update && apt-get install git -y
@@ -13,8 +8,6 @@ RUN git clone --depth=1 https://github.com/ziggerFramework/zigger-source-2.4.git
 RUN mkdir -p /usr/src/zigger/data
 RUN chown -R www-data:www-data /usr/src/zigger
 RUN chmod -R 1707 /usr/src/zigger/data
-COPY --from=nginx-moduler /usr/lib/nginx/modules/ndk_http_module.so /usr/lib/nginx/modules/
-COPY --from=nginx-moduler /usr/lib/nginx/modules/ngx_http_lua_module.so /usr/lib/nginx/modules/
 
 FROM php:${PHP_VERSION} as final
 ENV NGINX_VERSION   1.25.3
@@ -156,12 +149,12 @@ RUN set -x \
 	} > /ns/nginx-php-fpm.sh; \
     chmod +x /ns/nginx-php-fpm.sh
     
-COPY --from=nginx-moduler /usr/lib/nginx/modules/*.so /usr/lib/nginx/modules/
-COPY --from=zigger-downloader --chown=www-data:www-data /usr/src/rhymix /var/www/html
+COPY --from=zigger-downloader --chown=www-data:www-data /usr/src/zigger /var/www/html
+COPY --from=zigger-downloader /usr/lib/nginx/modules/*.so /usr/lib/nginx/modules/
 COPY ./nginx-conf/default.conf /etc/nginx/conf.d/default.conf
 
 COPY scripts/docker-entrypoint.sh /
-COPY ["scripts/10-listen-on-ipv6-by-default.sh", "scripts/20-envsubst-on-templates.sh", "scripts/30-tune-worker-processes.sh", "/docker-entrypoint.d/"]
+COPY ["scripts/10-listen-on-ipv6-by-default.sh", "scripts/20-envsubst-on-templates.sh", "scripts/30-tune-worker-processes.sh", "/docker-entrypoint.d"]
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
