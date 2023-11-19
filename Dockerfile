@@ -187,8 +187,8 @@ RUN set -x \
 	} > /ns/nginx-php-fpm.sh; \
     chmod +x /ns/nginx-php-fpm.sh
     
-COPY --from=nginx-moduler-rhymix-downloader /usr/lib/nginx/modules/*.so /usr/lib/nginx/modules/
-COPY --from=nginx-moduler-rhymix-downloader --chown=www-data:www-data /usr/src/rhymix /var/www/html
+COPY --from=nginx-moduler /usr/lib/nginx/modules/*.so /usr/lib/nginx/modules/
+COPY --from=zigger-downloader --chown=www-data:www-data /usr/src/rhymix /var/www/html
 COPY ./nginx-conf/default.conf /etc/nginx/conf.d/default.conf
 
 COPY scripts/docker-entrypoint.sh /
