@@ -47,37 +47,6 @@ RUN curl -sSLf -o /usr/local/bin/install-php-extensions \
 		echo 'html_errors = Off'; \
 	} > /usr/local/etc/php/conf.d/error-logging.ini
 
-FROM php:${PHP_VERSION} as final
-ENV NGINX_VERSION   1.25.3
-ENV NJS_VERSION     0.8.2
-ENV PKG_RELEASE     1~bookworm
-
-RUN curl -sSLf -o /usr/local/bin/install-php-extensions \
-        https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
-    chmod +x /usr/local/bin/install-php-extensions; \
-        install-php-extensions gd imagick apcu opcache redis pdo_mysql intl exif zip; \
-    set -eux; \
-    # set recommended PHP.ini settings
-    # see https://secure.php.net/manual/en/opcache.installation.php
-	{ \
-		echo 'opcache.memory_consumption=128'; \
-		echo 'opcache.interned_strings_buffer=8'; \
-		echo 'opcache.max_accelerated_files=4000'; \
-		echo 'opcache.revalidate_freq=2'; \
-	} > /usr/local/etc/php/conf.d/opcache-recommended.ini; \
-    { \
-    # https://www.php.net/manual/en/errorfunc.constants.php
-		echo 'error_reporting = E_ERROR | E_WARNING | E_PARSE | E_CORE_ERROR | E_CORE_WARNING | E_COMPILE_ERROR | E_COMPILE_WARNING | E_RECOVERABLE_ERROR'; \
-		echo 'display_errors = Off'; \
-		echo 'display_startup_errors = Off'; \
-		echo 'log_errors = On'; \
-		echo 'error_log = /dev/stderr'; \
-		echo 'log_errors_max_len = 1024'; \
-		echo 'ignore_repeated_errors = On'; \
-		echo 'ignore_repeated_source = Off'; \
-		echo 'html_errors = Off'; \
-	} > /usr/local/etc/php/conf.d/error-logging.ini
-
 # Nginx Dockerfile source
 # https://github.com/nginxinc/docker-nginx/blob/4bf0763f4977fff7e9648add59e0540088f3ca9f/mainline/debian/Dockerfile
 
@@ -192,7 +161,7 @@ COPY --from=zigger-downloader --chown=www-data:www-data /usr/src/rhymix /var/www
 COPY ./nginx-conf/default.conf /etc/nginx/conf.d/default.conf
 
 COPY scripts/docker-entrypoint.sh /
-COPY ["scripts/10-listen-on-ipv6-by-default.sh", "scripts/20-envsubst-on-templates.sh", "scripts/30-tune-worker-processes.sh", "/docker-entrypoint.d"]
+COPY ["scripts/10-listen-on-ipv6-by-default.sh", "scripts/20-envsubst-on-templates.sh", "scripts/30-tune-worker-processes.sh", "/docker-entrypoint.d/"]
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
